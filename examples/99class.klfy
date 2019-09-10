@@ -1,0 +1,23 @@
+stubdef for(uint16 start, uint16 end, uint16 left) {
+	let bool tracker = true
+	left = end - start
+	
+	while(tracker) {
+		stub
+		
+		left = left - 1
+		
+		if(or(compareUint16(0, left), equalUint16(0, left))) {
+			tracker = 1
+		}
+	}
+}
+
+let uint16 i = 0
+for(1, 10, i) {
+	let uint16 j = 0
+	
+	for(1, 10, j) {
+		print(i + " * " + j + " = " + (i * j));
+	}
+}

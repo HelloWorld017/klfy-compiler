@@ -1,0 +1,35 @@
+{
+  "name": "klfy-compiler",
+  "version": "2.2.22",
+  "description": "A language that compiles to konglang",
+  "main": "src/cli.mjs",
+  "type": "module",
+  "bin": {
+    "kong": "src/cli.mjs"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "ava test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HelloWorld017/klfy-compiler.git"
+  },
+  "keywords": [
+    "konglang",
+    "esoteric",
+    "compiler"
+  ],
+  "author": "Khinenw",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HelloWorld017/klfy-compiler/issues"
+  },
+  "homepage": "https://github.com/HelloWorld017/klfy-compiler#readme",
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
