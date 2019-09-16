@@ -2,30 +2,19 @@ import chalk from 'chalk';
 import stringWidth from 'string-width';
 
 export function displaySyntaxError(error) {
-	switch(error.type) {
-		case "InvalidToken":
-		case "InvalidChar":
-			// TODO handle
-			break;
-
-		default:
-			console.error(error);
-			return;
-	}
-
 	const errorPre = `${error.row} |    ` +
-		error.text.slice(0, error.column).replace(/\s+/, '');
+		error.text.slice(0, error.column).replace(/^\s+/, '');
 
-	const errorColored = chalk.red(error.text.substr(error.column, 1));
+	const errorColored = chalk.red(error.text.slice(error.column, error.column + 1));
 
 	const errorText =
 		errorPre +
 		errorColored +
 		error.text.slice(error.column + 1)
 
-	return error.message + '\n' +
+	return chalk.red(error.message + ` at ${error.row}:${error.column + 1}`) + '\n' +
 		errorText + '\n' +
-		' '.repeat(stringWidth(errorPre) - 1) + '^^^';
+		' '.repeat(stringWidth(errorPre) - 1) + chalk.red('^^^');
 };
 
 export function getInvalidTokenError(token) {

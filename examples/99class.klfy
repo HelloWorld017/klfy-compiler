@@ -13,11 +13,12 @@ stubdef for(uint16 start, uint16 end, uint16 left) {
 	}
 }
 
+// GuguClass
 let uint16 i = 0
 for(1, 10, i) {
 	let uint16 j = 0
 	
 	for(1, 10, j) {
-		print(i + " * " + j + " = " + (i * j));
+		print(i + " * " + j + " = " + (i * j))
 	}
 }

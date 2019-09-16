@@ -29,7 +29,8 @@
   },
   "homepage": "https://github.com/HelloWorld017/klfy-compiler#readme",
   "dependencies": {
+    "chalk": "^2.4.2",
+    "string-width": "^4.1.0"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
