@@ -1,28 +1,21 @@
 import chalk from 'chalk';
 import stringWidth from 'string-width';
 
-export function displaySyntaxError(error) {
+export function displaySyntaxError(error, source) {
+	const text = source.split('\n')[error.row - 1];
 	const errorPre = `${error.row} |    ` +
-		error.text.slice(0, error.column).replace(/^\s+/, '');
+		text.slice(0, error.column).replace(/^\s+/, '');
 
-	const errorColored = chalk.red(error.text.slice(error.column, error.column + 1));
+	const errorColored = chalk.red(text.slice(error.column, error.column + 1));
 
 	const errorText =
 		errorPre +
 		errorColored +
-		error.text.slice(error.column + 1)
+		text.slice(error.column + 1)
 
 	return chalk.red(error.message + ` at ${error.row}:${error.column + 1}`) + '\n' +
 		errorText + '\n' +
 		' '.repeat(stringWidth(errorPre) - 1) + chalk.red('^^^');
-};
-
-export function getInvalidTokenError(token) {
-	const error = new Error(`Unexpected token: ${token.string}`);
-	error.type = 'InvalidToken';
-	error.token = token;
-
-	return error;
 };
 
 export function toSigmaJson(tree) {
@@ -31,14 +24,9 @@ export function toSigmaJson(tree) {
 	const edges = [];
 
 	const traverse = (node, level=0, prev=undefined) => {
-		let connectionList = node.connectionList;
-		let label = `${node.name},${node.value || ''}`;
-
-		if(node.type === 'Token') {
-			connectionList = [];
-			label = `${node.name},${node.string}`;
-		}
-
+		let connectionList = node.children;
+		let label = `${node.name || 'Token:' + node.type},${node.content || ''}`;
+		
 		const thisId = Math.random().toString(36).slice(2);
 
 		if(prev) {
@@ -56,15 +44,17 @@ export function toSigmaJson(tree) {
 			label,
 			size: 2
 		});
-
-		for(let nextNode of connectionList) {
-			traverse(nextNode, level + 1, thisId);
+		
+		if(connectionList) {
+			for(let nextNode of connectionList) {
+				traverse(nextNode, level + 1, thisId);
+			}
 		}
 
 		index++
 	};
 
-	for(let statement of tree.connectionList) {
+	for(let statement of tree.children) {
 		traverse(statement);
 	}
 

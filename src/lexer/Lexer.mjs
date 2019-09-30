@@ -4,6 +4,7 @@ import LexerError from "./LexerError.mjs";
 class Lexer {
 	constructor(source) {
 		this.state = 'start';
+		this.stateStack = [];
 		this.source = source;
 		this.current = -1;
 		this.column = -1;
@@ -17,8 +18,11 @@ class Lexer {
 	}
 	
 	addToken(token) {
-		if(!this.tokens[this.line]) this.tokens[this.line] = [];
-		this.tokens[this.line].push(token);
+		token.at = {
+			column: this.column,
+			line: this.line
+		};
+		this.tokens.push(token);
 	}
 	
 	advance(amount = 1) {
@@ -89,9 +93,42 @@ class Lexer {
 			this.back();
 	}
 	
+	pushState(...args) {
+		this.stateStack.push(this.state);
+		this.jumpState(...args);
+	}
+	
+	popState(...args) {
+		const previousState = this.stateStack.pop();
+		this.jumpState(previousState, ...args);
+	}
+	
+	tokenizeSingle(c, tokenizeMap) {
+		for(let key in tokenizeMap) {
+			if(c === key) {
+				this.addToken({
+					type: tokenizeMap[key]
+				});
+				
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	scanNative(c) {
+		if(this.match('endnative', 0)) {
+			this.popState();
+			return;
+		}
+		
+		
+	}
+	
 	scanAnnotation(c) {
 		if(c === '\n') {
-			this.jumpState('start', true);
+			this.popState(true);
 		}
 	}
 	
@@ -110,7 +147,7 @@ class Lexer {
 				content: this.temporaryString
 			});
 			
-			this.jumpState('start', true);
+			this.popState(true);
 		}
 	}
 	
@@ -123,7 +160,7 @@ class Lexer {
 				content: parseInt(this.temporaryString)
 			});
 			
-			this.jumpState('start', true);
+			this.popState(true);
 		}
 	}
 	
@@ -166,7 +203,7 @@ class Lexer {
 					});
 				
 				this.addToken(this.temporaryToken);
-				this.jumpState('start');
+				this.popState();
 				break;
 			
 			case "'":
@@ -181,11 +218,11 @@ class Lexer {
 						content: this.temporaryString
 					});
 				
-				if(this.temporaryToken.children.length > 1 || this.temporaryString.length > 1)
-					throw new LexerError('Too Large Char', this);
+				if(this.temporaryToken.children.length !== 1 || this.temporaryString.length > 1)
+					throw new LexerError('Char should contain exactly one character', this);
 				
 				this.addToken(this.temporaryToken);
-				this.jumpState('start');
+				this.popState();
 				break;
 				
 			case '\n':
@@ -212,13 +249,17 @@ class Lexer {
 			return;
 		}
 		
+		if(this.match('native', 0)) {
+			this.pushState('native');
+		}
+		
 		if(this.matchRange([['a', 'z'], ['A', 'Z']], 0, false)) {
-			this.jumpState('name', true);
+			this.pushState('name', true);
 			return;
 		}
 		
 		if(this.matchRange([['0', '9']], 0, false)) {
-			this.jumpState('number', true);
+			this.pushState('number', true);
 			return;
 		}
 		
@@ -226,39 +267,24 @@ class Lexer {
 			return;
 		}
 		
+		if(this.tokenizeSingle(c, {
+			'(': 'ParenLeft',
+			')': 'ParenRight',
+			'{': 'BraceLeft',
+			'}': 'BraceRight',
+			'<': 'AngleBracketLeft',
+			'>': 'AngleBracketRight',
+			',': 'Comma',
+			'*': 'OperatorMultiply',
+			'+': 'OperatorAdd',
+			'-': 'OperatorSubtract',
+			'=': 'Assignment',
+			';': 'NewLine'
+		})) return;
+		
 		switch(c) {
-			case '(':
-				this.addToken({
-					type: 'ParenLeft'
-				});
-				break;
-				
-			case ')':
-				this.addToken({
-					type: 'ParenRight'
-				});
-				break;
-				
-			case '{':
-				this.addToken({
-					type: 'BraceLeft'
-				});
-				break;
-				
-			case '}':
-				this.addToken({
-					type: 'BraceRight'
-				});
-				break;
-				
-			case ',':
-				this.addToken({
-					type: 'Comma'
-				});
-				break;
-				
 			case '"':
-				this.jumpState('string');
+				this.pushState('string');
 				this.temporaryToken = {
 					type: 'String',
 					children: []
@@ -266,7 +292,7 @@ class Lexer {
 				break;
 			
 			case "'":
-				this.jumpState('charstring');
+				this.pushState('charstring');
 				this.temporaryToken = {
 					type: 'Char',
 					children: []
@@ -275,36 +301,12 @@ class Lexer {
 			
 			case '/':
 				if(this.match('/')) {
-					this.jumpState('annotation');
+					this.pushState('annotation');
 					break;
 				}
 				
 				this.addToken({
 					type: 'OperatorDivide'
-				});
-				break;
-			
-			case '*':
-				this.addToken({
-					type: 'OperatorMultiply'
-				});
-				break;
-			
-			case '+':
-				this.addToken({
-					type: 'OperatorPlus'
-				});
-				break;
-			
-			case '-':
-				this.addToken({
-					type: 'OperatorSubtract'
-				});
-				break;
-			
-			case '=':
-				this.addToken({
-					type: 'Assignment'
 				});
 				break;
 			
@@ -335,6 +337,10 @@ class Lexer {
 			
 			case 'number':
 				this.scanNumber(c);
+				break;
+			
+			case 'native':
+				this.scanNative(c);
 				break;
 			
 			case 'start':

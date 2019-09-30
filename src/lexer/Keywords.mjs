@@ -7,17 +7,16 @@ export default {
 	KeywordWhile: 'while',
 	
 	// Types
-	KeywordStr: 'str',
-	KeywordBool: 'bool',
-	KeywordUint8: 'uint8',
-	KeywordUint16: 'uint16',
-	KeywordUint32: 'uint32',
-	KeywordUint64: 'uint64',
+	KeywordTypeStr: 'str',
+	KeywordTypeBool: 'bool',
+	KeywordTypeUint8: 'uint8',
+	KeywordTypeUint16: 'uint16',
+	KeywordTypeUint32: 'uint32',
+	KeywordTypeUint64: 'uint64',
 	
 	KeywordNil: 'nil',
 	KeywordTrue: 'true',
 	KeywordFalse: 'false',
 	
-	KeywordInOut: 'inout',
 	KeywordOut: 'out'
 };

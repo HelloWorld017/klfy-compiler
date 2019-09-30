@@ -1,0 +1,4 @@
+let uint8 c1 = 's';
+let str s1 = "asdf";
+
+let uint16 i1 = c1 + 10;

@@ -1,0 +1,2 @@
+let uint16 result;
+result = 100 + 200 * (100 + 125) / 100 - 30;

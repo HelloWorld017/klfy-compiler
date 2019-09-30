@@ -7,7 +7,6 @@ class LexerError extends Error{
 		this.message = message;
 		this.row = lexer.line + 1;
 		this.column = lexer.column;
-		this.text = lexer.source.split('\n')[lexer.line];
 	}
 }
 
